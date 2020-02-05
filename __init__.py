@@ -1,3 +1,6 @@
+# The __init__.py file allows for importing a directory as a module in python.
+# To use this module, import this file's parent directory.
+
 from .hoshen_kopelman_module import _hoshen_kopelman
 import numpy as np
 
