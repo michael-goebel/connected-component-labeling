@@ -1,7 +1,17 @@
 from distutils.core import setup, Extension
 import numpy as np
 
-my_module = Extension('hoshen_kopelman_module', sources=['seg.c'],
+c_module = Extension('seg_module.hoshen_kopelman_module', sources=['src/seg_module/seg.c'],
     include_dirs=[np.get_include()])
 
-setup(py_modules=['__init__'],ext_modules=[my_module])
+setup(name='seg_module',
+      version='1.0',
+      packages=['seg_module'],
+      package_dir={'seg_module':'src/seg_module/'},
+      ext_modules=[c_module],
+      )
+
+
+
+
+
