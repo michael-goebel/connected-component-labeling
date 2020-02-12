@@ -1,4 +1,4 @@
-from .hoshen_kopelman_module import _hoshen_kopelman, _get_edge_mtx, _get_enc_mtx
+from ._hoshen_kopelman_module import _hoshen_kopelman, _get_edge_mtx, _get_enc_mtx
 import numpy as np
 
 # Ensures that input is of type int32. This is hard coded into C function.
@@ -25,71 +25,36 @@ class SegAndEnc:
     self.n_ccls = self.ccls.max() + 1
     self.ccl2class = np.empty(self.n_ccls,dtype=np.int32)
     self.ccl2class[self.ccls.reshape(-1)] = self.input.reshape(-1)
+    self.volumes = np.bincount(self.ccls.reshape(-1))
 
     if find_enclosures:
+      self.enclosures = True
       self.adj_mtx = ccls2adj_mtx(self.ccls)
       self.enc_mtx = adj_mtx2enc_mtx(self.adj_mtx)
-      self.child_dict = {i:np.nonzero(row)[0] for i,row in enumerate(self.enc_mtx[:-1]) if np.sum(row)>0}
-      self.parent_dict = {i:np.nonzero(row)[0] for i,row in enumerate(self.enc_mtx[:-1].T) if np.sum(row)>0}
+      np.fill_diagonal(self.enc_mtx,0)
+      self.ancestors = {i:set(np.nonzero(row)[0]) for i,row in enumerate(self.enc_mtx[:-1].T)}
+      self.descendants = {i:set(np.nonzero(row)[0]) for i,row in enumerate(self.enc_mtx[:-1])}
+
+      self.parents = {k:list(v-set().union(*[self.ancestors[vi] for vi in v])) for k,v in self.ancestors.items()}
+      self.parents = {k:v[0] for k,v in self.parents.items() if len(v) == 1}
+
+      self.children = {v:set() for v in self.parents.values()}
+      for k,v in self.parents.items(): self.children[v].add(k)
+    else: self.enclosures = False
+
+    
 
 
-#  def enc_mtx(self):
-#    if self.enc_mtx_v is None:
-#      self.enc_mtx_v = adj_mtx2enc_mtx(self.adj_mtx())
-#      self.chld_dict = {i:np.nonzero(row)[0] for i,row in enumerate(self.enc_mtx()[:-1]) if np.sum(row)>0}
-#      self.prnt_dict = {i:np.nonzero(row)[0] for i,row in enumerate(self.enc_mtx()[:-1].T) if np.sum(row)>0}
+  def summary(self):
+    out = dict()
+    out['num classes'] = int(self.input.max()) + 1
+    out['num ccls'] = self.n_ccls
+    out['ccl to class'] = {i:cls for i,cls in enumerate(self.ccl2class)}
+    out['volumes'] = {i:v for i,v in enumerate(self.volumes)}
+    if self.enclosures:
+      out['ancestors'] = self.ancestors
+      out['descendants'] = self.descendants
+      out['parents'] = self.parents
+      out['children'] = self.children
+    return out
 
-
-#      self.chld_dict = {(i+1)%(self.n_labels+1)-1:np.nonzero(row)[0] for i,row in enumerate(self.enc_mtx()) if np.sum(row)>0}
-#      self.prnt_dict = {(i+1)%(self.n_labels+1)-1:np.nonzero(row)[0] for i,row in enumerate(self.enc_mtx().T) if np.sum(row)>0}
-#    return self.enc_mtx_v
-
-
-
-
-
-#  def enc_dict(self):
-#    return {(i+1)%(self.n_labels+1)-1:np.nonzero(row)[0] for i,row in enumerate(self.enc_mtx()) if np.sum(row)>0}
-
-  
-
-
-
-#  def fill(self,label,new_label):
-#    L = self.labels()
-#    X[L==label] = new_cls
-#    
-
-
-
-#def get_enc_dict(ccls):
-#  enc_mtx = get_enc_mtx(ccls)
-#  output = {i:np.nonzero(row)[0] for i, row in enumerate(enc_mtx)}
-#  return output
-
-
-
-#def enc_mtx2enc_dict(X):
-#  X = np.ascontiguousarray(X,dtype=np.uint8)
-#  return {i:np.non
-
-
-#def connected_comps(X):
-#  X = np.ascontiguousarray(X,dtype=np.int32)
-#  Y = _hoshen_kopelman(X)
-#  return Y
-
-#def get_edge_mtx(ccls):
-#  ccls = np.ascontiguousarray(ccls,dtype=np.int32)
-#  edge_mtx = _get_edge_mtx(ccls)
-#  return edge_mtx
-
-#def get_enc_mtx(ccls):
-#  edge_mtx = get_edge_mtx(ccls)
-#  enc_mtx = _get_enc_mtx(edge_mtx)
-#  return enc_mtx
-
-#def get_enc_dict(ccls):
-#  enc_mtx = get_enc_mtx(ccls)
-#  output = {i:np.nonzero(row)[0] for i, row in enumerate(enc_mtx)}
-#  return output

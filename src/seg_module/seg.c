@@ -285,12 +285,12 @@ static PyMethodDef myMethods[] = {
 
 static struct PyModuleDef cModPyDem = {
   PyModuleDef_HEAD_INIT,
-  "hoshen_kopelman_module", "C implementation of hoshen-kopelman algorithm for numpy.",
+  "_hoshen_kopelman_module", "C implementation of hoshen-kopelman algorithm for numpy.",
   -1,
   myMethods
 };
 
-PyMODINIT_FUNC PyInit_hoshen_kopelman_module(void) {
+PyMODINIT_FUNC PyInit__hoshen_kopelman_module(void) {
   PyObject *module;
   module = PyModule_Create(&cModPyDem);
   import_array();

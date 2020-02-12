@@ -3,6 +3,7 @@ from colorsys import hsv_to_rgb
 
 a = 1/6
 
+
 def _furthest(x):
   if x.shape[0] == 0:
     return np.random.uniform()
